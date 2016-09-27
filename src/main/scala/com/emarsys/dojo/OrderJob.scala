@@ -10,8 +10,7 @@ object OrderJob {
     (clear(input) split '|').toList filterNot (_.isEmpty) map (f => JobDependency(f.head, f.tail.lastOption))
 
   def checkSelfDependency(jobs: List[JobDependency]): List[JobDependency] =
-    if (jobs.forall(_.noSelfDependency)) jobs
-    else throw new Exception("self dependency")
+    jobs.find(_.hasSelfDependency).fold(jobs)(_ => throw new Exception("self dependency"))
 
   def resolveDependency(jobs: List[JobDependency]): List[JobDependency] = jobs.partition(_.dependency.isEmpty) match {
     case (noDependency, Nil)            => noDependency
@@ -29,6 +28,6 @@ object OrderJob {
   val clear = (s: String) => s filter (c => '|' :: ('a' to 'z').toList contains c)
 
   case class JobDependency(job: Char, dependency: Option[Char]) {
-    val noSelfDependency = dependency.fold(true)(_ != job)
+    val hasSelfDependency = dependency.fold(false)(_ == job)
   }
 }
