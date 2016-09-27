@@ -1,4 +1,4 @@
-name := """bowling"""
+name := """dojo"""
 
 version := "1.0"
 

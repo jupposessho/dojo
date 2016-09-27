@@ -12,22 +12,20 @@ object OrderJob {
   def resolveDependency(jobs: List[JobDependency]): List[JobDependency] = jobs.partition(_.dependency.isEmpty) match {
     case (noDependency, Nil)            => noDependency
     case (Nil, withDependency)          => throw new Exception("circular dependency")
-    case (noDependency, withDependency) => noDependency ++ resolveDependency(removeResolvedDependency(noDependency, withDependency))
+    case (noDependency, withDependency) => noDependency ++ resolveDependency(withDependency map {
+      w => removeResolvedDependency(w, noDependency.map(_.job))
+    })
   }
 
-  def removeResolvedDependency(resolved: List[JobDependency], unresolved: List[JobDependency]) = unresolved.map { jd =>
-    if (resolved.map(j => Option(j.job)).contains(jd.dependency)) JobDependency(jd.job, None)
-    else jd
-  }
-  
+  def removeResolvedDependency(jd: JobDependency, resolved: List[Char]) =
+    JobDependency(jd.job, jd.dependency.filterNot(resolved.contains(_)))
+
   def parse(input: String): List[JobDependency] = {
     if (input.length < 1) List.empty[JobDependency]
     else input.split('|').toList.map(f => JobDependency(f.head, if (f.last == '>') None else f.lastOption))
   }
 
   case class JobDependency(job: Char, dependency: Option[Char]) {
-
     val noSelfDependency = dependency.fold(true)(_ != job)
-    //if (dependency.isEmpty) true else dependency.head != job
   }
 }
