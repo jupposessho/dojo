@@ -4,9 +4,9 @@ object OrderJob {
 
   def order(input: String): String = pipeline(input)
 
-  val pipeline = parse _ andThen checkSelfDependency andThen resolveDependency andThen extractIds andThen toString
+  val pipeline: (String) => String = parse _ andThen checkSelfDependency andThen resolveDependency andThen extractIds andThen toString
 
-  def parse(input: String) =
+  def parse(input: String): List[Job] =
     (clear(input) split '|').toList filterNot (_.isEmpty) map (f => Job(f.head, f.tail.lastOption))
 
   def checkSelfDependency(jobs: List[Job]): List[Job] =
@@ -20,14 +20,12 @@ object OrderJob {
     })
   }
 
-  def toString(ids: List[Char]) = ids mkString ""
-
-  val removeResolvedDependency = (jd: Job, resolved: List[Char]) =>
-    Job(jd.id, jd.dependency filterNot (resolved contains _))
-
-  val validCharacters = '|' :: ('a' to 'z').toList
-  val clear = (s: String) => s filter (c => validCharacters contains c )
   def extractIds(jobs: List[Job]) = jobs map (_.id)
+  def toString(ids: List[Char])   = ids mkString ""
+  val validCharacters             = '|' :: ('a' to 'z').toList
+  val clear                       = (s: String) => s filter (c => validCharacters contains c )
+  val removeResolvedDependency    = (jd: Job, resolved: List[Char]) =>
+    Job(jd.id, jd.dependency filterNot (resolved contains _))
 
   case class Job(id: Char, dependency: Option[Char]) {
     val hasSelfDependency = dependency.fold(false)(_ == id)
