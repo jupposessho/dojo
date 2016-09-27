@@ -4,30 +4,32 @@ object OrderJob {
 
   def order(input: String): String = pipeline(input)
 
-  val pipeline = parse _ andThen checkSelfDependency andThen resolveDependency andThen toString
+  val pipeline = parse _ andThen checkSelfDependency andThen resolveDependency andThen extractIds andThen toString
 
   def parse(input: String) =
-    (clear(input) split '|').toList filterNot (_.isEmpty) map (f => JobDependency(f.head, f.tail.lastOption))
+    (clear(input) split '|').toList filterNot (_.isEmpty) map (f => Job(f.head, f.tail.lastOption))
 
-  def checkSelfDependency(jobs: List[JobDependency]): List[JobDependency] =
+  def checkSelfDependency(jobs: List[Job]): List[Job] =
     jobs.find(_.hasSelfDependency).fold(jobs)(_ => throw new Exception("self dependency"))
 
-  def resolveDependency(jobs: List[JobDependency]): List[JobDependency] = jobs.partition(_.dependency.isEmpty) match {
+  def resolveDependency(jobs: List[Job]): List[Job] = jobs.partition(_.dependency.isEmpty) match {
     case (noDependency, Nil)            => noDependency
     case (Nil, withDependency)          => throw new Exception("circular dependency")
-    case (noDependency, withDependency) => noDependency ++ resolveDependency(withDependency map {
-      w => removeResolvedDependency(w, noDependency map (_.job))
+    case (noDependency, withDependency) => noDependency ++ resolveDependency(withDependency map { w =>
+      removeResolvedDependency(w, extractIds(noDependency))
     })
   }
 
-  def toString(jobs: List[JobDependency]) = jobs.map(_.job).mkString("")
+  def toString(ids: List[Char]) = ids mkString ""
 
-  val removeResolvedDependency = (jd: JobDependency, resolved: List[Char]) =>
-    JobDependency(jd.job, jd.dependency filterNot (resolved contains _))
+  val removeResolvedDependency = (jd: Job, resolved: List[Char]) =>
+    Job(jd.id, jd.dependency filterNot (resolved contains _))
 
-  val clear = (s: String) => s filter (c => '|' :: ('a' to 'z').toList contains c)
+  val validCharacters = '|' :: ('a' to 'z').toList
+  val clear = (s: String) => s filter (c => validCharacters contains c )
+  def extractIds(jobs: List[Job]) = jobs map (_.id)
 
-  case class JobDependency(job: Char, dependency: Option[Char]) {
-    val hasSelfDependency = dependency.fold(false)(_ == job)
+  case class Job(id: Char, dependency: Option[Char]) {
+    val hasSelfDependency = dependency.fold(false)(_ == id)
   }
 }
