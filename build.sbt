@@ -1,18 +1,21 @@
-name := """dojo"""
+name         := """dojo"""
+version      := "1.0"
+scalaVersion := "2.11.8"
 
-version := "1.0"
+resolvers ++= Seq(
+  Resolver.sonatypeRepo("releases"),
+  Resolver.sonatypeRepo("snapshots")
+)
 
-scalaVersion := "2.11.7"
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 
-// Change this to another test framework if you prefer
-libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.0" % "test"
-
-// Uncomment to use Akka
-val akkaV  = "2.4.10"
+val akkaV = "2.4.14"
 
 libraryDependencies += "com.typesafe.akka" %% "akka-actor" % akkaV
 libraryDependencies += "com.typesafe.akka" %% "akka-testkit" % akkaV
 
-
+libraryDependencies ++= Seq(
+  "com.chuusai" %% "shapeless" % "2.3.2"
+)
 
 fork in run := true
