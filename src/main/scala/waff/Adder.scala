@@ -1,4 +1,4 @@
-package jupposessho
+package waff
 
 import shapeless._
 
@@ -31,7 +31,7 @@ object Adder {
 		gen: Generic.Aux[A, R],
 		rAdder: Lazy[Adder[R]]
 		): Adder[A] =
-	Adder.pure { a => 
+	Adder.pure { a =>
 		gen.from(rAdder.value.add(gen.to(a), ""))
 	}
 }

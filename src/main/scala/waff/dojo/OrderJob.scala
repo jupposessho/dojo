@@ -1,4 +1,4 @@
-package com.emarsys.dojo
+package waff.dojo
 
 trait OrderJob {
 

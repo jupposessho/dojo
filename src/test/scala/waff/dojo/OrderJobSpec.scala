@@ -1,4 +1,4 @@
-package com.emarsys.dojo
+package waff.dojo
 
 import org.scalatest.{Matchers, WordSpec}
 import OrderJob._
